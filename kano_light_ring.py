@@ -3,7 +3,7 @@ piless_mode_on = False
 from datetime import datetime as dt
 import time
 try:
-    from rpi_ws281x import PixelStrip, Color
+    from rpi_ws281x import PixelStrip, Color # type: ignore
 except:
     print("Running on a non-Pi system. Mocking rpi_ws281x and running with pygame.\nPI-LESS MODE ON")
     piless_mode_on = True
@@ -89,6 +89,12 @@ PINK = Color(255, 0, 255)
 WHITE = Color(255, 255, 255)
 GRAY = Color(10, 10, 10)
 
+def convertLightNums(num): # from 0th light being one over from top to 0th being bottom
+    if num <= 9 and num > 3:
+        return num - 4
+    if num <= 3 and num >= 0:
+        return num + 6
+
 def easy_circle(color, x, y):
     # because i am so lazy
     return pygame.draw.circle(screen, color_rpi_to_pygame(color), pygame.Vector2(x, y), 25)
@@ -109,6 +115,33 @@ def solidColor(strip, color):
     for i in range(strip.numPixels()):
         strip.setPixelColor(i, color)
     strip.show()
+
+def turnOnLightsInRange(rangenum, color):
+    for light in range(rangenum):
+        strip.setPixelColor(convertLightNums(light), color)
+    return
+
+def minutes_to_light():
+
+    # current_minutes = tf.get_minutes()
+    current_minutes = 2
+    # debugging ^^
+
+    # range of minutes that will turn on those lights
+    rangeMax_minutes = 60
+    rangeMin_minutes = 54
+
+    range_of_lights_to_turn_on = 9
+    
+    # if current minutes are not in this range, subtract all of those
+    while not current_minutes > rangeMin_minutes or not current_minutes <= rangeMax_minutes:
+        rangeMin_minutes -= 6
+        rangeMax_minutes -= 6
+        range_of_lights_to_turn_on -= 1
+    
+    # once the while loop is broken...
+    turnOnLightsInRange(range_of_lights_to_turn_on, WHITE)
+
 
 def hourbinary_to_light():
     binary = tf.hour_to_binary()
@@ -132,14 +165,34 @@ def setAllFakesGray():
 if piless_mode_on == True:
     setAllFakesGray()
 
-hourbinary_to_light()
+scene_num = 0
+def change_scene():
+    global scene_num
+    if scene_num == 2:
+        scene_num = 1
+        return scene_num
+    else:
+        scene_num += 1
+        return scene_num
+
+
+
+# minutes_to_light()
+# hourbinary_to_light()
 # Example usage
 while running:
+    if piless_mode_on == True:
+        setAllFakesGray()
+    rotation = change_scene()
+    if scene_num == 1:
+        hourbinary_to_light()
+    if scene_num == 2:
+        minutes_to_light()
     pygame.display.flip()
-    # hourbinary_to_light()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+    time.sleep(4)
 if piless_mode_on == False:
     try:
         while True:
