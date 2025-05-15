@@ -89,11 +89,11 @@ PINK = Color(255, 0, 255)
 WHITE = Color(255, 255, 255)
 GRAY = Color(10, 10, 10)
 
-def convertLightNums(num): # from 0th light being one over from top to 0th being bottom
-    if num <= 9 and num > 3:
-        return num - 4
-    if num <= 3 and num >= 0:
-        return num + 6
+def convertLightNums(num): # 0th light is top, 1st is next one clockwise
+    if num <= 9 and num >= 5:
+        return num - 5
+    if num <= 4 and num >= 0:
+        return num + 5
 
 def easy_circle(color, x, y):
     # because i am so lazy
@@ -124,21 +124,23 @@ def turnOnLightsInRange(rangenum, color):
 def minutes_to_light():
 
     # current_minutes = tf.get_minutes()
-    current_minutes = 2
+    current_minutes = 7
     # debugging ^^
 
     # range of minutes that will turn on those lights
     rangeMax_minutes = 60
     rangeMin_minutes = 54
 
-    range_of_lights_to_turn_on = 9
+    range_of_lights_to_turn_on = 10
     
     # if current minutes are not in this range, subtract all of those
     while not current_minutes > rangeMin_minutes or not current_minutes <= rangeMax_minutes:
         rangeMin_minutes -= 6
         rangeMax_minutes -= 6
         range_of_lights_to_turn_on -= 1
+        print(f'{rangeMin_minutes}, {rangeMax_minutes}, {range_of_lights_to_turn_on}')
     
+
     # once the while loop is broken...
     turnOnLightsInRange(range_of_lights_to_turn_on, WHITE)
 
