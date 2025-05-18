@@ -182,23 +182,27 @@ def change_scene():
 # minutes_to_light()
 # hourbinary_to_light()
 # Example usage
-while running:
-    if piless_mode_on == True:
+if piless_mode_on == True:
+    while running:    
         setAllFakesGray()
-    rotation = change_scene()
-    if scene_num == 1:
-        hourbinary_to_light()
-    if scene_num == 2:
-        minutes_to_light()
-    pygame.display.flip()
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    time.sleep(4)
+        rotation = change_scene()
+        if scene_num == 1:
+            hourbinary_to_light()
+        if scene_num == 2:
+            minutes_to_light()
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        time.sleep(4)
 if piless_mode_on == False:
     try:
         while True:
-            pass
+            rotation = change_scene()
+            if scene_num == 1:
+                hourbinary_to_light()
+            if scene_num == 2:
+                minutes_to_light()
     except KeyboardInterrupt:
         solidColor(strip, Color(0, 0, 0))  # Turn off on exit
 
