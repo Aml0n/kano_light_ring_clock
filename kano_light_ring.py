@@ -199,10 +199,12 @@ if piless_mode_on == False:
     try:
         while True:
             rotation = change_scene()
-            if scene_num == 1:
+            if rotation == 1:
                 hourbinary_to_light()
-            if scene_num == 2:
+            if rotation == 2:
                 minutes_to_light()
+            strip.show()
+            time.sleep(4)
     except KeyboardInterrupt:
         solidColor(strip, Color(0, 0, 0))  # Turn off on exit
 
