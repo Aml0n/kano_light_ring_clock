@@ -123,8 +123,8 @@ def turnOnLightsInRange(rangenum, color):
 
 def minutes_to_light():
 
-    # current_minutes = tf.get_minutes()
-    current_minutes = 7
+    current_minutes = tf.get_minutes()
+    # current_minutes = 7
     # debugging ^^
 
     # range of minutes that will turn on those lights
@@ -139,11 +139,16 @@ def minutes_to_light():
         rangeMax_minutes -= 6
         range_of_lights_to_turn_on -= 1
         print(f'{rangeMin_minutes}, {rangeMax_minutes}, {range_of_lights_to_turn_on}')
-    
 
     # once the while loop is broken...
     turnOnLightsInRange(range_of_lights_to_turn_on, WHITE)
-
+    for num in range(4):
+        time.sleep(.5)
+        strip.setPixelColor(convertLightNums(range_of_lights_to_turn_on - 1), WHITE)
+        pygame.display.flip()
+        time.sleep(.5)
+        strip.setPixelColor(convertLightNums(range_of_lights_to_turn_on - 1), GRAY)
+        pygame.display.flip()
 
 def hourbinary_to_light():
     binary = tf.hour_to_binary()
@@ -159,6 +164,8 @@ def hourbinary_to_light():
         strip.setPixelColor(8, YELLOW)
     else:
         strip.setPixelColor(8, PURPLE)
+    pygame.display.flip()
+    time.sleep(4)
     return
                 
 def setAllFakesGray():
@@ -190,12 +197,9 @@ if piless_mode_on == True:
             hourbinary_to_light()
         if scene_num == 2:
             minutes_to_light()
-        pygame.display.flip()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        time.sleep(4)
-if piless_mode_on == False:
     try:
         while True:
             rotation = change_scene()
