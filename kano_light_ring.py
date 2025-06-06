@@ -1,6 +1,10 @@
 import time
 from rpi_ws281x import PixelStrip, Color
 
+# NOTE to self:
+# use 3.13.0 "trying pygame"
+# thank you!
+
 # LED ring configuration:
 LED_COUNT = 10        # Change this to match the number of LEDs in your ring (24 for Kano ring)
 LED_PIN = 18          # GPIO pin (18 works best for PWM on Pi)
