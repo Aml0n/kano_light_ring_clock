@@ -4,8 +4,9 @@ from datetime import datetime as dt
 import time
 try:
     from rpi_ws281x import PixelStrip, Color # type: ignore
-except:
-    print("Running on a non-Pi system. Mocking rpi_ws281x and running with pygame.\nPI-LESS MODE ON")
+    piless_mode_on = False 
+except Exception as e:
+    print(f"PI-LESS MODE ENABLED: {e}")
     piless_mode_on = True
     import pygame
     class Color:
@@ -20,7 +21,6 @@ except:
         def __init__(self, xCoord, yCoord, number):
             self.position = pygame.Vector2(xCoord, yCoord)
             self.number = number
-
     
     class PixelStrip:
 
@@ -112,7 +112,7 @@ def colorWipe(strip, color, wait_ms=50):
 
 # Function to set all LEDs to a single color
 def solidColor(strip, color):
-    for i in range(strip.numPixels()):
+    for i in range(LED_COUNT):
         strip.setPixelColor(i, color)
     strip.show()
 
@@ -206,6 +206,8 @@ if piless_mode_on == False:
             strip.show()
             time.sleep(4)
     except KeyboardInterrupt:
-        solidColor(strip, Color(0, 0, 0))  # Turn off on exit
+        solidColor(strip, 0)  # Turn off on exit
+        time.sleep(0.2)
+        strip.show()
 
 print("end of the script. :)")
