@@ -66,7 +66,7 @@ yCoordinates = [450, 410, 290, 210, 130, 50, 130, 210, 290, 410]
 import time_functions as tf
 
 # LED ring configuration:
-LED_COUNT = 10        # Change this to match the number of LEDs in your ring (24 for Kano ring)
+LED_COUNT = 10        # Change this to match the number of LEDs in your ring (10 for Kano ring)
 LED_PIN = 18          # GPIO pin (18 works best for PWM on Pi)
 LED_FREQ_HZ = 800000  # LED signal frequency
 LED_DMA = 10          # DMA channel to use
@@ -123,8 +123,8 @@ def turnOnLightsInRange(rangenum, color):
 
 def minutes_to_light():
 
-    # current_minutes = tf.get_minutes()
-    current_minutes = 7
+    current_minutes = tf.get_minutes()
+    # current_minutes = 50
     # debugging ^^
 
     # range of minutes that will turn on those lights
@@ -170,6 +170,11 @@ if piless_mode_on == True:
 scene_num = 0
 def change_scene():
     global scene_num
+
+    # turns all pixels off between color changes
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, Color(0, 0, 0))
+
     if scene_num == 2:
         scene_num = 1
         return scene_num
