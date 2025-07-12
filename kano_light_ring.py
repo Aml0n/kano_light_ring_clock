@@ -156,11 +156,21 @@ def turnOnLightsWithGradient(rangenum):
     strip.show()
     return
 
+def blinkLastLight(pixelNumber, pixelColor):
+    r, g, b = pixelColor
+    time.sleep(0.5)
+    strip.setPixelColor(pixelNumber, OFF)
+    strip.show()
+    time.sleep(0.5)
+    strip.setPixelColor(pixelNumber, Color(r, g, b))
+    strip.show()
+    return
+
 def minutes_to_light():
 
     current_minutes = tf.get_minutes()
 
-    # current_minutes = 58
+    # current_minutes = 45
     # debugging ^^
 
     # range of minutes that will turn on those lights
@@ -176,8 +186,16 @@ def minutes_to_light():
         range_of_lights_to_turn_on -= 1
         # print(f'{rangeMin_minutes}, {rangeMax_minutes}, {range_of_lights_to_turn_on}')
 
+    lastLight = convertLightNums(range_of_lights_to_turn_on) - 1
+    print(lastLight)
     # once the while loop is broken...
     turnOnLightsWithGradient(range_of_lights_to_turn_on)
+    lastLightColor = gradientColors[lastLight]
+    print(type(lastLightColor))
+    print(lastLightColor)
+
+    for _ in range(4):
+        blinkLastLight(lastLight, lastLightColor)
 
 
 def hourbinary_to_light():
@@ -247,10 +265,10 @@ if piless_mode_on == False:
             rotation = change_scene()
             if rotation == 1:
                 hourbinary_to_light()
+                strip.show()
+                time.sleep(4)
             if rotation == 2:
                 minutes_to_light()
-            strip.show()
-            time.sleep(4)
     except KeyboardInterrupt:
         solidColor(strip, 0)  # Turn off on exit
         time.sleep(0.2)
