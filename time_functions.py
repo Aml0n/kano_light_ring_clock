@@ -17,8 +17,6 @@ def isAM():
     if emmage == 'PM':
         return False
 
-def get_minutes():
+def getMinutes():
     now =  dt.now()
     return int(now.strftime('%M'))
-# hourToBinary()
-# am_or_pm()

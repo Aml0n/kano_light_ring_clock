@@ -178,18 +178,21 @@ def convertLightNums(num): # 0th light is top, 1st is next one clockwise
 
 def minutesToLight():
 
-    currentMinutes = tf.get_minutes()
+    currentMinutes = tf.getMinutes()
 
     # currentMinutes = 59
     # debugging ^^
 
-    # range of minutes that will turn on those lights
-    rangeMaxMinutes = 60
-    rangeMinMinutes = 54
+    startingRangeMaximum = 60
+    startingRangeMinimum = 54
 
-    rangeLightsOn = 9
+    # range of minutes that will turn on those lights
+    rangeMaxMinutes = startingRangeMaximum
+    rangeMinMinutes = startingRangeMinimum
+
+    rangeLightsOn = 9 # ninth light from top going clockwise; decreases one every loop
     
-    # if current minutes are not in this range, subtract all of those
+    # continuously lower the range until the minutes are in the range
     while not currentMinutes > rangeMinMinutes or not currentMinutes <= rangeMaxMinutes:
         rangeMinMinutes -= 6
         rangeMaxMinutes -= 6
