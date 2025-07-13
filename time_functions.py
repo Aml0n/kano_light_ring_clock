@@ -1,20 +1,24 @@
 from datetime import datetime as dt
 import time
 
-def hour_to_binary():
+def hourToBinary():
     now = dt.now()
     hour = int(now.strftime('%I'))
     first_binary = bin(hour)[2:]
     four_padded_binary_hour = first_binary.zfill(4)
     return four_padded_binary_hour
 
-def am_or_pm():
+def isAM():
     # will print upcapped if in US
     now = dt.now()
-    return now.strftime('%p')
+    emmage = now.strftime('%p')
+    if emmage == 'AM':
+        return True
+    if emmage == 'PM':
+        return False
 
 def get_minutes():
     now =  dt.now()
     return int(now.strftime('%M'))
-# hour_to_binary()
+# hourToBinary()
 # am_or_pm()
