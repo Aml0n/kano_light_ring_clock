@@ -74,7 +74,6 @@ def sunriseSunset():
     createSaveFile()
     deleteOldCache()
 
-
     today = date.today()
     formattedToday = today.strftime("%Y-%m-%d")
 
@@ -83,14 +82,14 @@ def sunriseSunset():
 
     with open('savedData/savedSunriseSunset.csv', mode='r', newline='') as file:
         reader = csv.DictReader(file)
-        for row in reader:
-            if row["date"] == formattedToday:
-                timestamps = row
-                rowFound = True
-                break
+        while rowFound == False:
+            for row in reader:
+                if row["date"] == formattedToday:
+                    timestamps = row
+                    rowFound = True
+                    return [row["date"], row["sunriseTIme"], row["sunsetTime"]]
 
-        # if row matching the date isn't found
-        if not rowFound:
+            # if row matching the date isn't found
             csvRows = getSunriseSunsetData()
             appendCsv(csvRows)
             
