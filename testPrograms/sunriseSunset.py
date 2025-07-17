@@ -5,6 +5,7 @@ import openmeteo_requests
 import requests_cache
 from retry_requests import retry
 import csv
+import os
 
 def createSaveFile(): # if the csv doesn't already exist, create it
     try:
@@ -16,9 +17,63 @@ def createSaveFile(): # if the csv doesn't already exist, create it
         print("save file already exists")
         return
 
+def deleteOldCache():
+    today = date.today()
+    formattedToday = today.strftime("%Y-%m-%d")
+    # formattedToday = "2025-07-20"
+    # todayTimestamp = today.timestamp()
+    with open("savedData/savedSunriseSunset.csv", 'r', newline='') as infile, \
+         open("savedData/temp.csv", 'w', newline='') as outfile:
+        reader = csv.DictReader(infile)
+        fieldnames = ['date', 'sunriseTime', 'sunsetTime']
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+
+        # next(reader, default) # skips header row
+        # writer.writeheader()
+        for row in reader:
+            rowDate = row["date"]
+            try:
+                rowDateObj = datetime.strptime(rowDate, "%Y-%m-%d").date()
+                formattedTodayObj = datetime.strptime(formattedToday, "%Y-%m-%d").date()
+                if rowDateObj >= formattedTodayObj:
+                    writer.writerow(row)
+                    print("wrote the row :3")
+                else:
+                    print("did NOT write the row")
+            except ValueError:
+                print(f"Invalid date format in row: {rowDate}")
+
+    with open('savedData/temp.csv', 'r', newline='') as infile, \
+         open('savedData/savedSunriseSunset.csv', 'w', newline='') as outfile:
+        reader = csv.reader(infile)
+        fieldnames = ['date', 'sunriseTime', 'sunsetTime']
+        writer = csv.writer(outfile)
+        
+        writer.writerow(['date', 'sunriseTime', 'sunsetTime'])
+        for row in reader:
+            print(row[0])
+            writer.writerow(row)
+
+    fileToRemove = "savedData/temp.csv"
+    try:
+        os.remove(fileToRemove)
+        print(f"deleted {fileToRemove}")
+    except FileNotFoundError:
+        print(f"{fileToRemove} not found")
+    except Exception as exception:
+        print(f"an error occured: {exception}")        
+
+    # with open("savedData/savedSunriseSunset.csv", mode="w", newline="") as file:
+    #     writer = csv.writer(file)
+    #     for row in writer:
+    #         if row[0] == formattedToday:
+    #             row = ""
+
 def sunriseSunset():
 
     createSaveFile()
+    deleteOldCache()
+
 
     today = date.today()
     formattedToday = today.strftime("%Y-%m-%d")
@@ -87,7 +142,7 @@ def getSunriseSunsetData():
                 
 
 startTime = time.time()
-createSaveFile()
+sunriseSunset()
 endTime = time.time()
 
 elapsedTime = endTime - startTime
