@@ -1,6 +1,10 @@
 from datetime import datetime as dt
 import time
 import time_functions as tf
+import openmeteo_requests
+import requests-cache
+from retry-requests import retry
+import csv
 
 try:
     from rpi_ws281x import PixelStrip, Color # type: ignore
@@ -168,6 +172,13 @@ def blinkLight(pixelNumber, pixelColor):
     return
 
 ## utility
+
+def sunriseSunset():
+    today = dt.today()
+    with open('savedData/savedSunriseSunset.csv', mode='r', newline='') as file:
+        reader = csv.DictReader()
+        for row in reader:
+            
 
 def convertLightNums(num): # 0th light is top, 1st is next one clockwise
     if num <= 9 and num >= 5:
