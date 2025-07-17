@@ -6,7 +6,19 @@ import requests_cache
 from retry_requests import retry
 import csv
 
+def createSaveFile(): # if the csv doesn't already exist, create it
+    try:
+        newCSV = open("savedData/savedSunriseSunset.csv", "x")
+        newCSV.close()
+        print("save file created")
+        return
+    except FileExistsError:
+        print("save file already exists")
+        return
+
 def sunriseSunset():
+
+    createSaveFile()
 
     today = date.today()
     formattedToday = today.strftime("%Y-%m-%d")
@@ -75,7 +87,7 @@ def getSunriseSunsetData():
                 
 
 startTime = time.time()
-sunriseSunset()
+createSaveFile()
 endTime = time.time()
 
 elapsedTime = endTime - startTime
