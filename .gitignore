@@ -174,4 +174,4 @@ pyvenv.cfg
 
 # kano light ring clock
 savedData/
-.cache
+.cache.sqlite

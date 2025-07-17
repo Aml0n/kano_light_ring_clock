@@ -8,7 +8,7 @@ import csv
 
 def sunriseSunset():
 
-    today = date.today().timestamp()
+    today = date.today()
     formattedToday = today.strftime("%Y-%m-%d")
 
     timestamps = {}
@@ -20,10 +20,19 @@ def sunriseSunset():
             if row["date"] == formattedToday:
                 timestamps = row
                 rowFound = True
-        # if row matching the date
+                break
+
+        # if row matching the date isn't found
         if not rowFound:
-            print("uh oh")
-        
+            csvRows = getSunriseSunsetData()
+            appendCsv(csvRows)
+            
+def appendCsv(rows):
+    with open('savedData/savedSunriseSunset.csv', mode='a', newline='') as file:
+        writer = csv.writer(file)
+        for row in rows:
+            writer.writerow(row)
+
 def getSunriseSunsetData():
     cacheSession = requests_cache.CachedSession('.cache', expire_after = 3600)
     retrySession = retry(cacheSession, retries = 5, backoff_factor = 0.2)
@@ -56,7 +65,7 @@ def getSunriseSunsetData():
     csvRows = []
     for itemNum in range(len(dailySunset)):
         csvRows.append([dailyDays[itemNum], int(dailySunrise[itemNum]), int(dailySunset[itemNum])])
-    print(csvRows)
+    return csvRows
     # print(dailyDays)
     # print(whatDayIsIt)
     # print(dailySunset)
@@ -66,7 +75,7 @@ def getSunriseSunsetData():
                 
 
 startTime = time.time()
-callOpenMeteo()
+sunriseSunset()
 endTime = time.time()
 
 elapsedTime = endTime - startTime
