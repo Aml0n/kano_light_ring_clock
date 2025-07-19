@@ -148,24 +148,36 @@ sunriseSunsetTimesUnix = sunriseSunset()
 
 sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
 sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
-stage = sunriseTime
-incrementRounded = round((sunsetTime - sunriseTime) / 5)
+
+sunUpStage = sunriseTime
+diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
+sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
 stagesFromSunriseUnix = []
 
-print(f"{sunsetTime}, {sunriseTime}, {incrementRounded}")
+print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
 
 for _ in range(5):
-    stagesFromSunriseUnix.append(stage)
-    print(stage)
-    stage += incrementRounded
+    stagesFromSunriseUnix.append(sunUpStage)
+    print(sunUpStage)
+    sunUpStage += sunUpIncrementRounded
+
+oneDayInSeconds = 86400
+remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
+sunDownIncrementRounded = round(remainingInDaySeconds / 5)
+sunDownStage = sunsetTime
+
+for _ in range(5):
+    stagesFromSunriseUnix.append(sunDownStage)
+    print(sunDownStage)
+    sunDownStage += sunDownIncrementRounded
 
 print(stagesFromSunriseUnix)
+print(len(stagesFromSunriseUnix))
 
 
+# startTime = time.time()
+# sunriseSunset()
+# endTime = time.time()
 
-startTime = time.time()
-sunriseSunset()
-endTime = time.time()
-
-elapsedTime = endTime - startTime
-print(f'ran in {elapsedTime} s')
+# elapsedTime = endTime - startTime
+# print(f'ran in {elapsedTime} s')
