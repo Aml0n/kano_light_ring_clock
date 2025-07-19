@@ -69,6 +69,12 @@ def deleteOldCache():
     #         if row[0] == formattedToday:
     #             row = ""
 
+# def sunriseSunsetAnimation():
+
+    
+    
+    
+
 def sunriseSunset():
 
     createSaveFile()
@@ -87,7 +93,7 @@ def sunriseSunset():
                 if row["date"] == formattedToday:
                     timestamps = row
                     rowFound = True
-                    return [row["date"], row["sunriseTIme"], row["sunsetTime"]]
+                    return {"date": row["date"], "sunriseTime": row["sunriseTime"], "sunsetTime": row["sunsetTime"]}
 
             # if row matching the date isn't found
             csvRows = getSunriseSunsetData()
@@ -138,7 +144,24 @@ def getSunriseSunsetData():
     # print(dailySunrise)
     # print(daily)
 
-                
+sunriseSunsetTimesUnix = sunriseSunset()
+
+sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
+sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
+stage = sunriseTime
+incrementRounded = round((sunsetTime - sunriseTime) / 5)
+stagesFromSunriseUnix = []
+
+print(f"{sunsetTime}, {sunriseTime}, {incrementRounded}")
+
+for _ in range(5):
+    stagesFromSunriseUnix.append(stage)
+    print(stage)
+    stage += incrementRounded
+
+print(stagesFromSunriseUnix)
+
+
 
 startTime = time.time()
 sunriseSunset()
