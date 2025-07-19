@@ -69,12 +69,6 @@ def deleteOldCache():
     #         if row[0] == formattedToday:
     #             row = ""
 
-# def sunriseSunsetAnimation():
-
-    
-    
-    
-
 def sunriseSunset():
 
     createSaveFile()
@@ -174,6 +168,23 @@ for _ in range(5):
 print(stagesFromSunriseUnix)
 print(len(stagesFromSunriseUnix))
 
+# TODO: must make conversion for the light nums for THIS one. tough.
+
+def sunriseSunsetAnimation(stages):
+    # stagesFromSunriseUnix would be used as the stages argument here
+
+    now = dt.now()
+    nowUnix = int(now.timestamp())
+
+    for stage, num in stages, range(stages):
+        if stage == stages[9]
+            pass
+            # 10th light would turn on
+
+        elif stage <= nowUnix or nowUnix < stages[(num + 1)]:
+            pass
+            # this is where the corresponding lights would turn on
+            break
 
 # startTime = time.time()
 # sunriseSunset()
