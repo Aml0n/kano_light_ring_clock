@@ -63,13 +63,7 @@ def deleteOldCache():
     except FileNotFoundError:
         print(f"{fileToRemove} not found")
     except Exception as exception:
-        print(f"an error occured: {exception}")        
-
-    # with open("savedData/savedSunriseSunset.csv", mode="w", newline="") as file:
-    #     writer = csv.writer(file)
-    #     for row in writer:
-    #         if row[0] == formattedToday:
-    #             row = ""
+        print(f"an error occured: {exception}")
 
 def sunriseSunset():
 
@@ -205,8 +199,10 @@ def sunriseSunsetAnimation(stages):
 
         if stage == stages[9]:
             strip.setPixelColor(convertToSunNums(num), NEYELLOW)
+
             moonPosition = getMoonPosition(num)
             strip.setPixelColor(convertToSunNums(moonPosition), MOON)
+
             break
             # 10th light would turn on
 

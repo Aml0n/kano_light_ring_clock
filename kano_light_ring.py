@@ -1,10 +1,11 @@
-from datetime import datetime as dt
+from datetime import datetime as dt, date
 import time
 import time_functions as tf
 import openmeteo_requests
-import requests-cache
-from retry-requests import retry
+import requests_cache
+from retry_requests import retry
 import csv
+import os
 
 try:
     from rpi_ws281x import PixelStrip, Color # type: ignore
@@ -82,6 +83,9 @@ except Exception as e:
 
 
 # AI generated sections vvvvv
+##
+##
+##
 
 #   # LED ring configuration:
 LED_COUNT = 10        # Change this to match the number of LEDs in your ring (10 for Kano ring)
@@ -135,9 +139,13 @@ NEPURPLE = Color(75,50,250)
 NEPURPLE2 = Color(100, 50, 175)
 NEPURPLE2DIM = Color(20, 10, 35)
 NEPURPLE3 = Color(125, 50, 150)
+MOON = Color(95, 95, 95)
 OFF = Color(0, 0, 0)
 
 ## animations
+##
+##
+##
 
 def colorWipe(strip, color, wait_ms=50):
     for i in range(strip.numPixels()):
@@ -152,7 +160,7 @@ def solidColor(strip, color):
 
 def gradientMinutes(rangenum):
     for light in range(rangenum):
-        index = convertLightNums(light)
+        index = convertMinuteNums(light)
         r, g, b = gradientColors[index]
         strip.setPixelColor(index, Color(r, g, b))
 
@@ -171,16 +179,189 @@ def blinkLight(pixelNumber, pixelColor):
     strip.show()
     return
 
+def sunriseSunsetAnimation(stages):
+    # stagesFromSunriseUnix would be used as the stages argument here
+
+    now = dt.now()
+    nowUnix = int(now.timestamp())
+
+    for num, stage in enumerate(stages):
+
+        if stage == stages[9]:
+            strip.setPixelColor(convertFromSunNums(num), NEYELLOW)
+            # print(f"{stage}, {nowUnix}, {stages[num + 1]}, {num}")
+
+            moonPosition = getMoonPosition(num)
+            strip.setPixelColor(convertFromSunNums(moonPosition), MOON)
+
+            break
+
+        elif stage <= nowUnix and nowUnix < stages[(num + 1)]:
+
+            strip.setPixelColor(convertFromSunNums(num), NEYELLOW) # red is placeholder
+            # print(f"{stage}, {nowUnix}, {stages[num + 1]}, {num}")
+
+            moonPosition = getMoonPosition(num)
+            strip.setPixelColor(convertFromSunNums(moonPosition), MOON)
+            break
+
 ## utility
+##
+##
+##
 
 def sunriseSunset():
-    today = dt.today()
-    with open('savedData/savedSunriseSunset.csv', mode='r', newline='') as file:
-        reader = csv.DictReader()
-        for row in reader:
-            
 
-def convertLightNums(num): # 0th light is top, 1st is next one clockwise
+    createSaveFile()
+    deleteOldCache()
+
+    today = date.today()
+    formattedToday = today.strftime("%Y-%m-%d")
+
+    timestamps = {}
+    rowFound = False
+
+    with open('savedData/savedSunriseSunset.csv', mode='r', newline='') as file:
+        reader = csv.DictReader(file)
+        while rowFound == False:
+            for row in reader:
+                if row["date"] == formattedToday:
+                    timestamps = row
+                    rowFound = True
+                    return {"date": row["date"], "sunriseTime": row["sunriseTime"], "sunsetTime": row["sunsetTime"]}
+
+            # if row matching the date isn't found
+            csvRows = getSunriseSunsetData()
+            appendCsv(csvRows)
+
+def getSunriseSunsetData():
+    cacheSession = requests_cache.CachedSession('.cache', expire_after = 3600)
+    retrySession = retry(cacheSession, retries = 5, backoff_factor = 0.2)
+    openmeteo = openmeteo_requests.Client(session = retrySession)
+
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+	"latitude": 34.060583399368205,
+	"longitude": -118.24431504690445,
+	"daily": ["sunset", "sunrise"],
+	"timezone": "America/Los_Angeles"
+    }   
+
+    responses = openmeteo.weather_api(url, params=params)
+    response = responses[0] 
+
+    # print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
+    # print(f"Elevation {response.Elevation()} m asl")
+    # print(f"Timezone {response.Timezone()}{response.TimezoneAbbreviation()}")
+    # print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
+    
+    daily = response.Daily()
+    dailySunset = daily.Variables(0).ValuesInt64AsNumpy()
+    dailySunrise = daily.Variables(1).ValuesInt64AsNumpy()
+    
+    dailyDays = []
+    for timestamp in dailySunset:
+        dateObj = dt.fromtimestamp(timestamp)
+        dailyDays.append(dateObj.strftime("%Y-%m-%d"))
+
+    csvRows = []
+    for itemNum in range(len(dailySunset)):
+        csvRows.append([dailyDays[itemNum], int(dailySunrise[itemNum]), int(dailySunset[itemNum])])
+    return csvRows
+
+    # vvv lots of debugging code
+
+    # print(dailyDays)
+    # print(whatDayIsIt)
+    # print(dailySunset)
+    # print(dailySunrise)
+    # print(daily)
+
+def appendCsv(rows):
+    with open('savedData/savedSunriseSunset.csv', mode='a', newline='') as file:
+        writer = csv.writer(file)
+        for row in rows:
+            writer.writerow(row)
+
+def deleteOldCache():
+    today = date.today()
+    formattedToday = today.strftime("%Y-%m-%d")
+    # formattedToday = "2025-07-20"
+    # todayTimestamp = today.timestamp()
+    with open("savedData/savedSunriseSunset.csv", 'r', newline='') as infile, \
+         open("savedData/temp.csv", 'w', newline='') as outfile:
+        reader = csv.DictReader(infile)
+        fieldnames = ['date', 'sunriseTime', 'sunsetTime']
+        writer = csv.DictWriter(outfile, fieldnames=fieldnames)
+
+        # next(reader, default) # skips header row
+        # writer.writeheader()
+
+        rowsWritten = 0
+        rowsDeleted = 0
+
+        for row in reader:
+            rowDate = row["date"]
+            try:
+                rowDateObj = dt.strptime(rowDate, "%Y-%m-%d").date()
+                formattedTodayObj = dt.strptime(formattedToday, "%Y-%m-%d").date()
+                if rowDateObj >= formattedTodayObj:
+                    writer.writerow(row)
+                    # print("wrote the row :3")
+                    rowsWritten += 1
+                else:
+                    # print("did NOT write the row")
+                    rowsDeleted += 1
+            except ValueError:
+                print(f"Invalid date format in row: {rowDate}")
+
+    print(f"wrote {rowsWritten} row(s), deleted {rowsDeleted} row(s)")
+
+    with open('savedData/temp.csv', 'r', newline='') as infile, \
+         open('savedData/savedSunriseSunset.csv', 'w', newline='') as outfile:
+        reader = csv.reader(infile)
+        fieldnames = ['date', 'sunriseTime', 'sunsetTime']
+        writer = csv.writer(outfile)
+        
+        writer.writerow(['date', 'sunriseTime', 'sunsetTime'])
+        for row in reader:
+            # print(row[0])
+            writer.writerow(row)
+
+    fileToRemove = "savedData/temp.csv"
+    try:
+        os.remove(fileToRemove)
+        print(f"deleted {fileToRemove}")
+    except FileNotFoundError:
+        print(f"{fileToRemove} not found")
+    except Exception as exception:
+        print(f"an error occured: {exception}")
+
+def createSaveFile(): # if the csv doesn't already exist, create it
+    try:
+        newCSV = open("savedData/savedSunriseSunset.csv", "x")
+        newCSV.close()
+        print("save file created")
+        
+        return
+    except FileExistsError:
+        print("save file already exists")
+        return
+
+def convertFromSunNums(pixelNum):
+    if pixelNum >= 0 and pixelNum <= 6:
+        return pixelNum + 3
+    else:
+        return pixelNum - 7
+
+def getMoonPosition(sunPosition):
+    if sunPosition >= 0 and sunPosition <= 4:
+        return sunPosition + 5
+
+    else:
+        return sunPosition - 5
+
+def convertMinuteNums(num): # 0th light is top, 1st is next one clockwise
     if num <= 9 and num >= 5:
         return num - 5
 
@@ -210,7 +391,7 @@ def minutesToLight():
         rangeLightsOn -= 1
         # print(f'{rangeMinMinutes}, {rangeMaxMinutes}, {rangeLightsOn}')
 
-    lastLight = convertLightNums(rangeLightsOn)
+    lastLight = convertMinuteNums(rangeLightsOn)
     # print(lastLight) # debug
 
     # once the while loop is broken...
@@ -248,6 +429,7 @@ def hourBinaryToLight():
 def setAllFakesGray():
     for i in range(strip.numPixels()):
         strip.setPixelColor(i, GRAY)
+
 if pilessModeOn == True:
     setAllFakesGray()
 
@@ -260,12 +442,42 @@ def changeScene():
     for i in range(strip.numPixels()):
         strip.setPixelColor(i, Color(0, 0, 0))
 
-    if sceneNum == 2:
+    if sceneNum == 3:
         sceneNum = 1
         return sceneNum
     else:
         sceneNum += 1
         return sceneNum
+
+sunriseSunsetTimesUnix = sunriseSunset()
+
+sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
+sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
+
+sunUpStage = sunriseTime
+diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
+sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
+stagesFromSunriseUnix = []
+
+# print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
+
+for _ in range(5):
+    stagesFromSunriseUnix.append(sunUpStage)
+    # print(sunUpStage)
+    sunUpStage += sunUpIncrementRounded
+
+oneDayInSeconds = 86400
+remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
+sunDownIncrementRounded = round(remainingInDaySeconds / 5)
+sunDownStage = sunsetTime
+
+for _ in range(5):
+    stagesFromSunriseUnix.append(sunDownStage)
+    # print(sunDownStage)
+    sunDownStage += sunDownIncrementRounded
+
+# print(stagesFromSunriseUnix)
+# print(len(stagesFromSunriseUnix))
 
 if pilessModeOn == True:
     while running:    
@@ -285,14 +497,22 @@ if pilessModeOn == True:
 if pilessModeOn == False:
 
     try:
+
         while True: 
             rotation = changeScene()
+
             if rotation == 1:
                 hourBinaryToLight()
                 strip.show()
                 time.sleep(4)
+
             if rotation == 2:
                 minutesToLight()
+
+            if rotation == 3:
+                sunriseSunsetAnimation(stagesFromSunriseUnix)
+                strip.show()
+                time.sleep(4)
 
     except KeyboardInterrupt:
         solidColor(strip, 0) # turn off lights
