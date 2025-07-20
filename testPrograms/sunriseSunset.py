@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, date as dt, date
+from datetime import datetime as dt, date
 # import time_functions as tf
 import openmeteo_requests
 import requests_cache
@@ -35,8 +35,8 @@ def deleteOldCache():
         for row in reader:
             rowDate = row["date"]
             try:
-                rowDateObj = datetime.strptime(rowDate, "%Y-%m-%d").date()
-                formattedTodayObj = datetime.strptime(formattedToday, "%Y-%m-%d").date()
+                rowDateObj = dt.strptime(rowDate, "%Y-%m-%d").date()
+                formattedTodayObj = dt.strptime(formattedToday, "%Y-%m-%d").date()
                 if rowDateObj >= formattedTodayObj:
                     writer.writerow(row)
                     print("wrote the row :3")
@@ -134,59 +134,48 @@ def getSunriseSunsetData():
     for itemNum in range(len(dailySunset)):
         csvRows.append([dailyDays[itemNum], int(dailySunrise[itemNum]), int(dailySunset[itemNum])])
     return csvRows
+
+    # vvv lots of debugging code
+
     # print(dailyDays)
     # print(whatDayIsIt)
     # print(dailySunset)
     # print(dailySunrise)
     # print(daily)
 
-# sunriseSunsetTimesUnix = sunriseSunset()
+# code to figure out increments vvvv
 
-# sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
-# sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
+sunriseSunsetTimesUnix = sunriseSunset()
 
-# sunUpStage = sunriseTime
-# diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
-# sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
-# stagesFromSunriseUnix = []
+sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
+sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
 
-# print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
+sunUpStage = sunriseTime
+diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
+sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
+stagesFromSunriseUnix = []
 
-# for _ in range(5):
-#     stagesFromSunriseUnix.append(sunUpStage)
-#     print(sunUpStage)
-#     sunUpStage += sunUpIncrementRounded
+print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
 
-# oneDayInSeconds = 86400
-# remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
-# sunDownIncrementRounded = round(remainingInDaySeconds / 5)
-# sunDownStage = sunsetTime
+for _ in range(5):
+    stagesFromSunriseUnix.append(sunUpStage)
+    print(sunUpStage)
+    sunUpStage += sunUpIncrementRounded
 
-# for _ in range(5):
-#     stagesFromSunriseUnix.append(sunDownStage)
-#     print(sunDownStage)
-#     sunDownStage += sunDownIncrementRounded
+oneDayInSeconds = 86400
+remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
+sunDownIncrementRounded = round(remainingInDaySeconds / 5)
+sunDownStage = sunsetTime
 
-# print(stagesFromSunriseUnix)
-# print(len(stagesFromSunriseUnix))
+for _ in range(5):
+    stagesFromSunriseUnix.append(sunDownStage)
+    print(sunDownStage)
+    sunDownStage += sunDownIncrementRounded
 
-# TODO: must make conversion for the light nums for THIS one. tough.
+print(stagesFromSunriseUnix)
+print(len(stagesFromSunriseUnix))
 
-def sunriseSunsetAnimation(stages):
-    # stagesFromSunriseUnix would be used as the stages argument here
-
-    now = dt.now()
-    nowUnix = int(now.timestamp())
-
-    for stage, num in stages, range(stages):
-        if stage == stages[9]:
-            pass
-            # 10th light would turn on
-
-        elif stage <= nowUnix or nowUnix < stages[(num + 1)]:
-            pass
-            # this is where the corresponding lights would turn on
-            break
+# ^^^^^^^
 
 LED_COUNT = 10        # Change this to match the number of LEDs in your ring (10 for Kano ring)
 LED_PIN = 18          # GPIO pin (18 works best for PWM on Pi)
@@ -203,6 +192,42 @@ strip.begin()
 RED = Color(255, 0, 0)
 WHITE = Color(255, 255, 255)
 OFF = Color(0, 0, 0)
+NEYELLOW = Color(175, 100, 10)
+MOON = Color(95, 95, 95)
+
+def sunriseSunsetAnimation(stages):
+    # stagesFromSunriseUnix would be used as the stages argument here
+
+    now = dt.now()
+    nowUnix = int(now.timestamp())
+
+    for num, stage in enumerate(stages):
+
+        if stage == stages[9]:
+            strip.setPixelColor(convertToSunNums(num), NEYELLOW)
+            moonPosition = getMoonPosition(num)
+            strip.setPixelColor(convertToSunNums(moonPosition), MOON)
+            break
+            # 10th light would turn on
+
+        elif stage <= nowUnix and nowUnix < stages[(num + 1)]:
+
+            strip.setPixelColor(convertToSunNums(num), NEYELLOW) # red is placeholder
+            print(f"{stage}, {nowUnix}, {stages[num + 1]}, {num}")
+
+            moonPosition = getMoonPosition(num)
+            strip.setPixelColor(convertToSunNums(moonPosition), MOON)
+            # this is where the corresponding lights would turn on
+
+            break
+
+def getMoonPosition(sunPosition):
+
+    if sunPosition >= 0 and sunPosition <= 4:
+        return sunPosition + 5
+
+    else:
+        return sunPosition - 5
 
 # for pixel in range(LED_COUNT):
 #     strip.setPixelColor(pixel, OFF)
@@ -214,8 +239,11 @@ def convertToSunNums(pixelNum):
     else:
         return pixelNum - 7
 
-strip.setPixelColor(convertToSunNums(5), RED)
+sunriseSunsetAnimation(stagesFromSunriseUnix)
 strip.show()
+
+# strip.setPixelColor(convertToSunNums(5), RED)
+# strip.show()
 
 # startTime = time.time()
 # sunriseSunset()
