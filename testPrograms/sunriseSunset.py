@@ -7,6 +7,8 @@ from retry_requests import retry
 import csv
 import os
 
+from rpi_ws281x import PixelStrip, Color
+
 def createSaveFile(): # if the csv doesn't already exist, create it
     try:
         newCSV = open("savedData/savedSunriseSunset.csv", "x")
@@ -138,35 +140,35 @@ def getSunriseSunsetData():
     # print(dailySunrise)
     # print(daily)
 
-sunriseSunsetTimesUnix = sunriseSunset()
+# sunriseSunsetTimesUnix = sunriseSunset()
 
-sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
-sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
+# sunsetTime = int(sunriseSunsetTimesUnix["sunsetTime"])
+# sunriseTime = int(sunriseSunsetTimesUnix["sunriseTime"])
 
-sunUpStage = sunriseTime
-diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
-sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
-stagesFromSunriseUnix = []
+# sunUpStage = sunriseTime
+# diffSunsetSunriseSeconds = (sunsetTime - sunriseTime)
+# sunUpIncrementRounded = round((diffSunsetSunriseSeconds) / 5)
+# stagesFromSunriseUnix = []
 
-print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
+# print(f"{sunsetTime}, {sunriseTime}, {sunUpIncrementRounded}")
 
-for _ in range(5):
-    stagesFromSunriseUnix.append(sunUpStage)
-    print(sunUpStage)
-    sunUpStage += sunUpIncrementRounded
+# for _ in range(5):
+#     stagesFromSunriseUnix.append(sunUpStage)
+#     print(sunUpStage)
+#     sunUpStage += sunUpIncrementRounded
 
-oneDayInSeconds = 86400
-remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
-sunDownIncrementRounded = round(remainingInDaySeconds / 5)
-sunDownStage = sunsetTime
+# oneDayInSeconds = 86400
+# remainingInDaySeconds = (oneDayInSeconds - diffSunsetSunriseSeconds)
+# sunDownIncrementRounded = round(remainingInDaySeconds / 5)
+# sunDownStage = sunsetTime
 
-for _ in range(5):
-    stagesFromSunriseUnix.append(sunDownStage)
-    print(sunDownStage)
-    sunDownStage += sunDownIncrementRounded
+# for _ in range(5):
+#     stagesFromSunriseUnix.append(sunDownStage)
+#     print(sunDownStage)
+#     sunDownStage += sunDownIncrementRounded
 
-print(stagesFromSunriseUnix)
-print(len(stagesFromSunriseUnix))
+# print(stagesFromSunriseUnix)
+# print(len(stagesFromSunriseUnix))
 
 # TODO: must make conversion for the light nums for THIS one. tough.
 
@@ -177,7 +179,7 @@ def sunriseSunsetAnimation(stages):
     nowUnix = int(now.timestamp())
 
     for stage, num in stages, range(stages):
-        if stage == stages[9]
+        if stage == stages[9]:
             pass
             # 10th light would turn on
 
@@ -185,6 +187,35 @@ def sunriseSunsetAnimation(stages):
             pass
             # this is where the corresponding lights would turn on
             break
+
+LED_COUNT = 10        # Change this to match the number of LEDs in your ring (10 for Kano ring)
+LED_PIN = 18          # GPIO pin (18 works best for PWM on Pi)
+LED_FREQ_HZ = 800000  # LED signal frequency
+LED_DMA = 10          # DMA channel to use
+LED_BRIGHTNESS = 15  # Full brightness (0-255)
+LED_INVERT = False    # Needed if using a logic level converter (usually False)
+LED_CHANNEL = 0       # Channel for PWM
+
+#   # initialize strip
+strip = PixelStrip(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL)
+strip.begin()
+
+RED = Color(255, 0, 0)
+WHITE = Color(255, 255, 255)
+OFF = Color(0, 0, 0)
+
+# for pixel in range(LED_COUNT):
+#     strip.setPixelColor(pixel, OFF)
+#     strip.show()
+
+def convertToSunNums(pixelNum):
+    if pixelNum >= 0 and pixelNum <= 6:
+        return pixelNum + 3
+    else:
+        return pixelNum - 7
+
+strip.setPixelColor(convertToSunNums(5), RED)
+strip.show()
 
 # startTime = time.time()
 # sunriseSunset()
