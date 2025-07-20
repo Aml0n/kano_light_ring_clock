@@ -342,7 +342,11 @@ def createSaveFile(): # if the csv doesn't already exist, create it
         newCSV = open("savedData/savedSunriseSunset.csv", "x")
         newCSV.close()
         print("save file created")
-        
+
+        with open("savedData/savedSunriseSunset.csv", "w") as file:
+            writer = csv.writer(file)
+            writer.writerow("date,sunriseTime,sunsetTime")
+
         return
     except FileExistsError:
         print("save file already exists")
@@ -519,4 +523,4 @@ if pilessModeOn == False:
         time.sleep(0.2) # to put some leeway after keyboardinterrupt to properly turn off lights
         strip.show()
 
-print("end of the script. :)")
+print("\nkeyboardinterrupt: end of the script. :)")
