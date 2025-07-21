@@ -404,7 +404,7 @@ def minutesToLight():
 
     # print(lastLightColor) # debug
 
-    for _ in range(4):
+    for _ in range(timePerSceneSeconds):
         blinkLight(lastLight, lastLightColor)
 
 
@@ -438,6 +438,7 @@ if pilessModeOn == True:
     setAllFakesGray()
 
 sceneNum = 0
+timePerSceneSeconds = 4
 
 def changeScene():
     global sceneNum
@@ -495,7 +496,7 @@ if pilessModeOn == True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        time.sleep(4)
+        time.sleep(timePerSceneSeconds)
 
 
 if pilessModeOn == False:
@@ -508,7 +509,7 @@ if pilessModeOn == False:
             if rotation == 1:
                 hourBinaryToLight()
                 strip.show()
-                time.sleep(4)
+                time.sleep(timePerSceneSeconds)
 
             if rotation == 2:
                 minutesToLight()
@@ -516,7 +517,7 @@ if pilessModeOn == False:
             if rotation == 3:
                 sunriseSunsetAnimation(stagesFromSunriseUnix)
                 strip.show()
-                time.sleep(4)
+                time.sleep(timePerSceneSeconds)
 
     except KeyboardInterrupt:
         solidColor(strip, 0) # turn off lights
