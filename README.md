@@ -5,6 +5,10 @@ a simple clock program repurposing old Kano computer kits by utilizing the **Kan
 - analog-style ring display
 - at-a-glance minutes reading
 - hours displayed in binary
+- rising and setting sun
+
+## Demo
+[Youtube Link](https://youtu.be/h-vryLde_LI?si=nl46Tlp91xjcnfZC)
 
 ## License
 MIT License — see `LICENSE` for details.
