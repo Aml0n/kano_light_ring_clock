@@ -171,3 +171,7 @@ cython_debug/
 .pypirc
 bin/
 pyvenv.cfg
+
+# kano light ring clock
+savedData/
+.cache.sqlite
